@@ -97,7 +97,7 @@ def is_git_repo(folder: Union[str, Path]) -> bool:
     """
     Check if the folder is the root of a git repository
     """
-    folder_exists = (Path(folder)/".git").exists()
+    folder_exists = (Path(folder) / ".git").exists()
     git_branch = subprocess.run(
         "git branch".split(), cwd=folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
@@ -329,7 +329,7 @@ def lfs_log_progress():
     current_lfs_progress_value = os.environ.get("GIT_LFS_PROGRESS", "")
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        os.environ["GIT_LFS_PROGRESS"] = str(Path(tmpdir)/"lfs_progress")
+        os.environ["GIT_LFS_PROGRESS"] = str(Path(tmpdir) / "lfs_progress")
         logger.debug(f"Following progress in {os.environ['GIT_LFS_PROGRESS']}")
 
         exit_event = threading.Event()
@@ -402,7 +402,7 @@ class Repository:
         """
         local_dir = Path(local_dir)
         local_dir.mkdir(parents=True, exist_ok=True)
-        self.local_dir = Path.cwd()/local_dir
+        self.local_dir = Path.cwd() / local_dir
         self.repo_type = repo_type
         self.command_queue = []
         self.private = private
@@ -841,8 +841,8 @@ class Repository:
         for filename in files_to_be_staged(pattern, folder=self.local_dir):
             if filename in deleted_files:
                 continue
-            path_to_file = Path.cwd()/self.local_dir/filename
-            size_in_mb = path_to_file.stat().st_size  / (1024 * 1024)
+            path_to_file = Path.cwd() / self.local_dir / filename
+            size_in_mb = path_to_file.stat().st_size / (1024 * 1024)
 
             if (
                 size_in_mb >= 10
@@ -1315,7 +1315,7 @@ class Repository:
             )
 
         current_working_directory = Path.cwd()
-        os.chdir(current_working_directory/self.local_dir)
+        os.chdir(current_working_directory / self.local_dir)
 
         try:
             yield self
@@ -1347,12 +1347,12 @@ class Repository:
             os.chdir(current_working_directory)
 
     def repocard_metadata_load(self) -> Optional[Dict]:
-        filepath = self.local_dir/REPOCARD_NAME
+        filepath = self.local_dir / REPOCARD_NAME
         if filepath.is_file():
             return metadata_load(filepath)
 
     def repocard_metadata_save(self, data: Dict) -> None:
-        return metadata_save(self.local_dir/REPOCARD_NAME, data)
+        return metadata_save(self.local_dir / REPOCARD_NAME, data)
 
     @property
     def commands_failed(self):
