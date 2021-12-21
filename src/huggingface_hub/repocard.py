@@ -1,5 +1,4 @@
 import dataclasses
-import os
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
@@ -42,9 +41,10 @@ def metadata_save(local_path: Union[str, Path], data: Dict) -> None:
     """
     line_break = "\n"
     content = ""
+    local_path = Path(local_path)
     # try to detect existing newline character
-    if os.path.exists(local_path):
-        with open(local_path, "r", newline="") as readme:
+    if local_path.exists():
+        with local_path.open("r", newline="") as readme:
             if type(readme.newlines) is tuple:
                 line_break = readme.newlines[0]
             if type(readme.newlines) is str:
@@ -52,7 +52,7 @@ def metadata_save(local_path: Union[str, Path], data: Dict) -> None:
             content = readme.read()
 
     # creates a new file if it not
-    with open(local_path, "w", newline="") as readme:
+    with local_path.open("w", newline="") as readme:
         data_yaml = yaml.dump(data, sort_keys=False, line_break=line_break)
         # sort_keys: keep dict order
         match = REGEX_YAML_BLOCK.search(content)

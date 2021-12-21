@@ -15,13 +15,13 @@ path = /path/to/huggingface_hub/.env/bin/python
 args = -m debugpy --listen 5678 --wait-for-client /path/to/huggingface_hub/src/huggingface_hub/commands/huggingface_cli.py
 lfs-multipart-upload ```
 """
-
-import json
 import os
+import json
 import subprocess
 import sys
 from argparse import ArgumentParser
 from contextlib import AbstractContextManager
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import requests
@@ -75,8 +75,8 @@ class LfsEnableCommand:
         self.args = args
 
     def run(self):
-        local_path = os.path.abspath(self.args.path)
-        if not os.path.isdir(local_path):
+        local_path = Path(self.args.path).resolve()
+        if not local_path.is_dir():
             print("This does not look like a valid git repo.")
             exit(1)
         subprocess.run(
