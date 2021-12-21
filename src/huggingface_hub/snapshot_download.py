@@ -139,7 +139,7 @@ def snapshot_download(
         # if we have internet connection we retrieve the correct folder name from the huggingface api
         _api = HfApi()
         model_info = _api.model_info(repo_id=repo_id, revision=revision, token=token)
-        storage_folder = (cache_dir / repo_id_flattened).with_suffix(revision)
+        storage_folder = cache_dir / repo_id_flattened / revision
 
         # if passed revision is not identical to the commit sha
         # then revision has to be a branch name, e.g. "main"
