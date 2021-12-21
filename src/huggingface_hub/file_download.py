@@ -147,15 +147,15 @@ def filename_to_url(filename, cache_dir=None) -> Tuple[str, str]:
     if isinstance(cache_dir, Path):
         cache_dir = str(cache_dir)
 
-    cache_path = os.path.join(cache_dir, filename)
-    if not os.path.exists(cache_path):
+    cache_path = Path(cache_dir) / filename
+    if not cache_path.exists():
         raise EnvironmentError(f"file {cache_path} not found")
 
-    meta_path = cache_path + ".json"
-    if not os.path.exists(meta_path):
+    meta_path = cache_path.with_suffix(".json")
+    if not meta_path.exists():
         raise EnvironmentError(f"file {meta_path} not found")
 
-    with open(meta_path, encoding="utf-8") as meta_file:
+    with meta_path.open(encoding="utf-8") as meta_file:
         metadata = json.load(meta_file)
     url = metadata["url"]
     etag = metadata["etag"]
@@ -315,10 +315,10 @@ def cached_download(
     """
     if cache_dir is None:
         cache_dir = HUGGINGFACE_HUB_CACHE
-    if isinstance(cache_dir, Path):
-        cache_dir = str(cache_dir)
+    if not isinstance(cache_dir, Path):
+        cache_dir = Path(cache_dir)
 
-    os.makedirs(cache_dir, exist_ok=True)
+    cache_dir.mkdir(parents=True, exist_ok=True)
 
     headers = {
         "user-agent": http_user_agent(
@@ -381,12 +381,12 @@ def cached_download(
     )
 
     # get cache path to put the file
-    cache_path = os.path.join(cache_dir, filename)
+    cache_path = cache_dir / filename
 
     # etag is None == we don't have a connection or we passed local_files_only.
     # try to get the last downloaded one
     if etag is None:
-        if os.path.exists(cache_path) and not force_download:
+        if cache_path.exists() and not force_download:
             return cache_path
         else:
             matching_files = [
@@ -401,7 +401,7 @@ def cached_download(
                 and not force_download
                 and force_filename is None
             ):
-                return os.path.join(cache_dir, matching_files[-1])
+                return cache_dir / matching_files[-1]
             else:
                 # If files cannot be found and local_files_only=True,
                 # the models might've been found if local_files_only=False
@@ -419,37 +419,37 @@ def cached_download(
                     )
 
     # From now on, etag is not None.
-    if os.path.exists(cache_path) and not force_download:
+    if cache_path.exists() and not force_download:
         return cache_path
 
     # Prevent parallel downloads of the same file with a lock.
-    lock_path = cache_path + ".lock"
+    lock_path = cache_path.with_suffix(".lock")
 
     # Some Windows versions do not allow for paths longer than 255 characters.
     # In this case, we must specify it is an extended path by using the "\\?\" prefix.
-    if os.name == "nt" and len(os.path.abspath(lock_path)) > 255:
-        lock_path = "\\\\?\\" + os.path.abspath(lock_path)
-
-    if os.name == "nt" and len(os.path.abspath(cache_path)) > 255:
-        cache_path = "\\\\?\\" + os.path.abspath(cache_path)
+    if os.name == "nt":
+        if len(str(lock_path.resolve())) > 255:
+            lock_path = Path("\\\\?\\") / lock_path.resolve()
+        if len(str(cache_path.resolve())) > 255:
+            cache_path = Path("\\\\?\\") / cache_path.resolve()
 
     with FileLock(lock_path):
 
         # If the download just completed while the lock was activated.
-        if os.path.exists(cache_path) and not force_download:
+        if cache_path.exists() and not force_download:
             # Even if returning early like here, the lock will be released.
             return cache_path
 
         if resume_download:
-            incomplete_path = cache_path + ".incomplete"
+            incomplete_path = cache_path.with_suffix(".incomplete")
 
             @contextmanager
             def _resumable_file_manager() -> "io.BufferedWriter":
-                with open(incomplete_path, "ab") as f:
+                with incomplete_path.open("ab") as f:
                     yield f
 
             temp_file_manager = _resumable_file_manager
-            if os.path.exists(incomplete_path):
+            if incomplete_path.exists():
                 resume_size = os.stat(incomplete_path).st_size
             else:
                 resume_size = 0
@@ -478,8 +478,8 @@ def cached_download(
         if force_filename is None:
             logger.info("creating metadata file for %s", cache_path)
             meta = {"url": url, "etag": etag}
-            meta_path = cache_path + ".json"
-            with open(meta_path, "w") as meta_file:
+            meta_path = cache_path.with_suffix(".json")
+            with meta_path.open("w") as meta_file:
                 json.dump(meta, meta_file)
 
     return cache_path
