@@ -46,7 +46,7 @@ def save_pretrained_keras(
             raise RuntimeError(
                 f"Provided config to save_pretrained_keras should be a dict. Got: '{type(config)}'"
             )
-        path = save_directory/CONFIG_NAME
+        path = save_directory / CONFIG_NAME
         with open(path, "w") as f:
             json.dump(config, f)
 

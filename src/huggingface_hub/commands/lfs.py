@@ -15,8 +15,8 @@ path = /path/to/huggingface_hub/.env/bin/python
 args = -m debugpy --listen 5678 --wait-for-client /path/to/huggingface_hub/src/huggingface_hub/commands/huggingface_cli.py
 lfs-multipart-upload ```
 """
-import os
 import json
+import os
 import subprocess
 import sys
 from argparse import ArgumentParser

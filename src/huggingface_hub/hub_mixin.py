@@ -53,7 +53,7 @@ class ModelHubMixin:
 
         # saving config
         if isinstance(config, dict):
-            path = save_directory/CONFIG_NAME
+            path = save_directory / CONFIG_NAME
             with path.open("w") as f:
                 json.dump(config, f)
 
@@ -127,11 +127,11 @@ class ModelHubMixin:
         revision = None
         if len(model_id.split("@")) == 2:
             model_id, revision = model_id.split("@")
-        
+
         model_id = Path(model_id)
 
         if model_id.is_dir() and CONFIG_NAME in os.listdir(model_id):
-            config_file = model_id/CONFIG_NAME
+            config_file = model_id / CONFIG_NAME
         else:
             try:
                 config_file = hf_hub_download(
@@ -254,7 +254,7 @@ class ModelHubMixin:
 
         if repo_path_or_name is None:
             repo_path_or_name = repo_url.split("/")[-1]
-        
+
         repo_path_or_name = Path(repo_path_or_name)
         # If no URL is passed and there's no path to a directory containing files, create a repo
         if repo_url is None and not repo_path_or_name.exists():
@@ -315,7 +315,7 @@ class PyTorchModelHubMixin(ModelHubMixin):
         """
         Overwrite this method in case you don't want to save complete model, rather some specific layers
         """
-        path = Path(save_directory)/PYTORCH_WEIGHTS_NAME
+        path = Path(save_directory) / PYTORCH_WEIGHTS_NAME
         model_to_save = self.module if hasattr(self, "module") else self
         torch.save(model_to_save.state_dict(), path)
 
@@ -341,7 +341,7 @@ class PyTorchModelHubMixin(ModelHubMixin):
 
         if Path(model_id).is_dir():
             print("Loading weights from local directory")
-            model_file = Path(model_id)/PYTORCH_WEIGHTS_NAME)
+            model_file = Path(model_id) / PYTORCH_WEIGHTS_NAME
         else:
             model_file = hf_hub_download(
                 repo_id=model_id,
