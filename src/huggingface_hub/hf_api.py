@@ -13,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-import os
 import re
 import subprocess
 import sys
 import warnings
 from io import BufferedIOBase, RawIOBase
-from os.path import expanduser
+from pathlib import Path
 from typing import IO, Dict, Iterable, List, Optional, Tuple, Union
 
 import requests
@@ -978,9 +977,9 @@ class HfApi:
                 raise ValueError("Invalid token passed!")
 
         # Validate path_or_fileobj
-        if isinstance(path_or_fileobj, str):
-            path_or_fileobj = os.path.normpath(os.path.expanduser(path_or_fileobj))
-            if not os.path.isfile(path_or_fileobj):
+        if isinstance(path_or_fileobj, (Path, str)):
+            path_or_fileobj = Path(path_or_fileobj).expanduser()
+            if not path_or_fileobj.is_file():
                 raise ValueError(f"Provided path: '{path_or_fileobj}' is not a file")
         elif not isinstance(path_or_fileobj, (RawIOBase, BufferedIOBase, bytes)):
             # ^^ Test from: https://stackoverflow.com/questions/44584829/how-to-determine-if-file-is-opened-in-binary-or-text-mode
@@ -1006,7 +1005,7 @@ class HfApi:
 
         headers = {"authorization": f"Bearer {token}"} if token is not None else None
 
-        if isinstance(path_or_fileobj, str):
+        if isinstance(path_or_fileobj, (Path, str)):
             with open(path_or_fileobj, "rb") as bytestream:
                 r = requests.post(path, headers=headers, data=bytestream)
         else:
@@ -1122,14 +1121,14 @@ class HfApi:
 
 
 class HfFolder:
-    path_token = expanduser("~/.huggingface/token")
+    path_token = Path("~/.huggingface/token").expanduser()
 
     @classmethod
     def save_token(cls, token):
         """
         Save token, creating folder as needed.
         """
-        os.makedirs(os.path.dirname(cls.path_token), exist_ok=True)
+        cls.path_token.parent.mkdir(parents=True, exist_ok=True)
         with open(cls.path_token, "w+") as f:
             f.write(token)
 
@@ -1139,7 +1138,7 @@ class HfFolder:
         Get token or None if not existent.
         """
         try:
-            with open(cls.path_token, "r") as f:
+            with cls.path_token.open() as f:
                 return f.read()
         except FileNotFoundError:
             pass
@@ -1150,7 +1149,7 @@ class HfFolder:
         Delete token. Do not fail if token does not exist.
         """
         try:
-            os.remove(cls.path_token)
+            cls.path_token.unlink()
         except FileNotFoundError:
             pass
 
