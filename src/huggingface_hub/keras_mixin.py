@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
@@ -28,6 +27,7 @@ def save_pretrained_keras(
     config (:obj:`dict`, `optional`):
         Configuration object to be saved alongside the model weights.
     """
+    save_directory = Path(save_directory)
     if is_tf_available():
         import tensorflow as tf
     else:
@@ -38,7 +38,7 @@ def save_pretrained_keras(
     if not model.built:
         raise ValueError("Model should be built before trying to save")
 
-    os.makedirs(save_directory, exist_ok=True)
+    save_directory.mkdir(parents=True, exist_ok=True)
 
     # saving config
     if config:
@@ -46,7 +46,7 @@ def save_pretrained_keras(
             raise RuntimeError(
                 f"Provided config to save_pretrained_keras should be a dict. Got: '{type(config)}'"
             )
-        path = os.path.join(save_directory, CONFIG_NAME)
+        path = save_directory/CONFIG_NAME
         with open(path, "w") as f:
             json.dump(config, f)
 
@@ -130,7 +130,7 @@ def push_to_hub_keras(
         repo_path_or_name = repo_url.split("/")[-1]
 
     # If no URL is passed and there's no path to a directory containing files, create a repo
-    if repo_url is None and not os.path.exists(repo_path_or_name):
+    if repo_url is None and not Path(repo_path_or_name).exists():
         repo_name = Path(repo_path_or_name).name
         repo_url = HfApi(endpoint=api_endpoint).create_repo(
             repo_name,
@@ -221,7 +221,7 @@ class KerasModelHubMixin(ModelHubMixin):
         cfg = model_kwargs.pop("config", None)
 
         # Root is either a local filepath matching model_id or a cached snapshot
-        if not os.path.isdir(model_id):
+        if not Path(model_id).is_dir():
             storage_folder = snapshot_download(
                 repo_id=model_id, revision=revision, cache_dir=cache_dir
             )
