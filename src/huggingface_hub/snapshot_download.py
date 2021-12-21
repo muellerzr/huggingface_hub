@@ -51,8 +51,8 @@ def snapshot_download(
         cache_dir = HUGGINGFACE_HUB_CACHE
     if revision is None:
         revision = DEFAULT_REVISION
-    if isinstance(cache_dir, Path):
-        cache_dir = str(cache_dir)
+    if not isinstance(cache_dir, Path):
+        cache_dir = Path(cache_dir)
 
     if isinstance(use_auth_token, str):
         token = use_auth_token
@@ -72,7 +72,7 @@ def snapshot_download(
     # last modified folder in the cache
     if local_files_only:
         # possible repos have <path/to/cache_dir>/<flatten_repo_id> prefix
-        repo_folders_prefix = os.path.join(cache_dir, repo_id_flattened)
+        repo_folders_prefix = cache_dir / repo_id_flattened
 
         # list all possible folders that can correspond to the repo_id
         # and are of the format <flattened-repo-id>.<revision>.<commit-sha>
@@ -139,8 +139,7 @@ def snapshot_download(
         # if we have internet connection we retrieve the correct folder name from the huggingface api
         _api = HfApi()
         model_info = _api.model_info(repo_id=repo_id, revision=revision, token=token)
-
-        storage_folder = os.path.join(cache_dir, repo_id_flattened + "." + revision)
+        storage_folder = (cache_dir / repo_id_flattened).with_suffix(revision)
 
         # if passed revision is not identical to the commit sha
         # then revision has to be a branch name, e.g. "main"
@@ -154,13 +153,11 @@ def snapshot_download(
 
     for model_file in model_files:
         url = hf_hub_url(repo_id, filename=model_file, revision=repo_id_sha)
-        relative_filepath = os.path.join(*model_file.split("/"))
+        relative_filepath = Path(*model_file.split("/"))
 
         # Create potential nested dir
-        nested_dirname = os.path.dirname(
-            os.path.join(storage_folder, relative_filepath)
-        )
-        os.makedirs(nested_dirname, exist_ok=True)
+        nested_dirname = (Path(storage_folder) / relative_filepath).parent
+        nested_dirname.mkdir(parents=True, exist_ok=True)
 
         path = cached_download(
             url,

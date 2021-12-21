@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import subprocess
 import sys
+from pathlib import Path
 
 
 LFS_MULTIPART_UPLOAD_COMMAND = "lfs-multipart-upload"
@@ -29,8 +29,8 @@ def install_lfs_in_userspace():
     if sys.platform != "linux":
         raise ValueError("Only implemented for Linux right now")
     GIT_LFS_TARBALL = "https://github.com/git-lfs/git-lfs/releases/download/v2.13.1/git-lfs-linux-amd64-v2.13.1.tar.gz"
-    CWD = os.path.join(os.getcwd(), "install_lfs")
-    os.makedirs(CWD, exist_ok=True)
+    CWD = Path.cwd() / "install_lfs"
+    CWD.mkdir(parents=True, exist_ok=True)
     subprocess.run(
         ["wget", "-O", "tarball.tar.gz", GIT_LFS_TARBALL], check=True, cwd=CWD
     )
