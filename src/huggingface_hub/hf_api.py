@@ -707,7 +707,7 @@ class HfApi:
         Params:
             private: Whether the model repo should be private (requires a paid huggingface.co account)
 
-            repo_type: Set to "dataset" or "space" if creating a dataset or space, default is model
+            repo_type: Set to "dataset" or "space" if creating a dataset or space, default is "model"
 
             exist_ok: Do not raise an error if repo already exists
 
