@@ -938,7 +938,7 @@ class RepositoryOfflineTest(RepositoryCommonTest):
     @classmethod
     def setUpClass(cls) -> None:
         if os.path.exists(WORKING_REPO_DIR):
-            shutil.rmtree(WORKING_REPO_DIR, onerror=set_write_permission_and_retry)
+            shutil.rmtree(fr'{WORKING_REPO_DIR}', onerror=set_write_permission_and_retry)
 
         os.makedirs(WORKING_REPO_DIR, exist_ok=True)
         subprocess.run(
@@ -992,7 +992,7 @@ class RepositoryOfflineTest(RepositoryCommonTest):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        shutil.rmtree(WORKING_REPO_DIR, onerror=set_write_permission_and_retry)
+        shutil.rmtree(fr'{WORKING_REPO_DIR}', onerror=set_write_permission_and_retry)
 
     def test_is_tracked_with_lfs(self):
         repo = Repository(WORKING_REPO_DIR)
@@ -1440,7 +1440,7 @@ class RepositoryDatasetTest(RepositoryCommonTest):
                 pass
 
         shutil.rmtree(
-            f"{WORKING_DATASET_DIR}/{self.REPO_NAME}",
+            fr"{WORKING_DATASET_DIR}/{self.REPO_NAME}",
             onerror=set_write_permission_and_retry,
         )
 
