@@ -419,19 +419,19 @@ def cached_download(
                     )
 
     # From now on, etag is not None.
-    if cache_path.exists() and not force_download:
+    if os.path.exists(cache_path) and not force_download:
         return cache_path
 
     # Prevent parallel downloads of the same file with a lock.
-    lock_path = cache_path.with_suffix(".lock")
+    lock_path = Path(f'{cache_path}.lock')
 
     # Some Windows versions do not allow for paths longer than 255 characters.
     # In this case, we must specify it is an extended path by using the "\\?\" prefix.
-    if os.name == "nt":
-        if len(str(lock_path.resolve())) > 255:
-            lock_path = Path("\\\\?\\") / lock_path.resolve()
-        if len(str(cache_path.resolve())) > 255:
-            cache_path = Path("\\\\?\\") / cache_path.resolve()
+    if os.name == "nt" and len(lock_path.abs()) > 255:
+        lock_path = "\\\\?\\" + lock_path.abs()
+
+    if os.name == "nt" and len(cache_path.abs()) > 255:
+        cache_path = "\\\\?\\" + cache_path.abs()
 
     with FileLock(lock_path):
 
@@ -441,11 +441,11 @@ def cached_download(
             return cache_path
 
         if resume_download:
-            incomplete_path = cache_path.with_suffix(".incomplete")
+            incomplete_path = Path(f'{cache_path}.incomplete')
 
             @contextmanager
             def _resumable_file_manager() -> "io.BufferedWriter":
-                with incomplete_path.open("ab") as f:
+                with open(incomplete_path, "ab") as f:
                     yield f
 
             temp_file_manager = _resumable_file_manager
@@ -479,7 +479,7 @@ def cached_download(
             logger.info("creating metadata file for %s", cache_path)
             meta = {"url": url, "etag": etag}
             meta_path = cache_path.with_suffix(".json")
-            with meta_path.open("w") as meta_file:
+            with open(meta_path, "w") as meta_file:
                 json.dump(meta, meta_file)
 
     return cache_path
