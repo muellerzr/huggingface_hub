@@ -175,8 +175,7 @@ def snapshot_download(
             use_auth_token=use_auth_token,
             local_files_only=local_files_only,
         )
-
-        if os.path.exists(path + ".lock"):
-            os.remove(path + ".lock")
+        if os.path.exists(f'{path}.lock'):
+            os.remove(f'{path}.lock')
 
     return storage_folder
