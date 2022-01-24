@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "0.3.0.dev0"
+__version__ = "0.4.0.dev0"
 
 from .commands.user import notebook_login
 from .constants import (
@@ -32,8 +32,10 @@ from .constants import (
 )
 from .file_download import cached_download, hf_hub_download, hf_hub_url
 from .hf_api import (
+    DatasetSearchArguments,
     HfApi,
     HfFolder,
+    ModelSearchArguments,
     create_repo,
     dataset_info,
     delete_file,
@@ -65,3 +67,4 @@ from .keras_mixin import (
 from .repository import Repository
 from .snapshot_download import snapshot_download
 from .utils import logging
+from .utils.endpoint_helpers import DatasetFilter, ModelFilter
